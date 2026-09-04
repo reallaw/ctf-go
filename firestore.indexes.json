@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "submissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "attackerTeamId", "order": "ASCENDING" },
+        { "fieldPath": "ts", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "victimTeamId", "order": "ASCENDING" },
+        { "fieldPath": "round", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

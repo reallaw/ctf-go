@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function myTeamId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.teamId;
+    }
+
+    // Профиль пользователя: читает сам владелец и админ; создать можно только свой
+    // документ с ролью player (повышение до admin — только через консоль/функции).
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid
+                    && request.resource.data.role == 'player';
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Команды и табло — читают все залогиненные. Запись только через Cloud Functions
+    // (Admin SDK обходит правила) либо админом.
+    match /teams/{teamId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Соревнования и раунды — публичны на чтение, пишет только админ/функции.
+    match /competitions/{compId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /rounds/{roundId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Результаты SLA-проверок — только чтение своей команды и админ.
+    match /checks/{checkId} {
+      allow read: if isSignedIn();
+      allow write: if false; // только Admin SDK
+    }
+
+    // Флаги НИКОГДА не читаются и не пишутся клиентом — только Admin SDK в функциях.
+    match /flags/{flagId} {
+      allow read, write: if false;
+    }
+
+    // Сабмиты: команда видит свои; создаются ТОЛЬКО через функцию submit_flag
+    // (Admin SDK), напрямую из клиента писать нельзя, чтобы не начислить очки в обход.
+    match /submissions/{subId} {
+      allow read: if isSignedIn()
+                  && (isAdmin() || resource.data.attackerTeamId == myTeamId());
+      allow write: if false;
+    }
+  }
+}
