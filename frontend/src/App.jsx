@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Scoreboard from "./pages/Scoreboard.jsx";
 import ChallengeView from "./pages/ChallengeView.jsx";
 import TeamService from "./pages/TeamService.jsx";
+import Editor from "./pages/Editor.jsx";
+import Learn from "./pages/Learn.jsx";
 import Admin from "./pages/Admin.jsx";
 
 function Nav() {
@@ -17,6 +19,8 @@ function Nav() {
       <Link to="/">Табло</Link>
       {user && <Link to="/dashboard">Кабинет</Link>}
       {user && <Link to="/challenge">Задание</Link>}
+      {user && <Link to="/learn">Обучение</Link>}
+      {user && <Link to="/editor">Мой код</Link>}
       {user && <Link to="/service">Мой сервис</Link>}
       {profile?.role === "admin" && <Link to="/admin">Админ</Link>}
       <span className="spacer" />
@@ -53,6 +57,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
         <Route path="/challenge" element={<Protected><ChallengeView /></Protected>} />
+        <Route path="/learn" element={<Protected><Learn /></Protected>} />
+        <Route path="/editor" element={<Protected><Editor /></Protected>} />
         <Route path="/service" element={<Protected><TeamService /></Protected>} />
         <Route path="/admin" element={<AdminOnly><Admin /></AdminOnly>} />
       </Routes>
